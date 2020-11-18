@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using WebMerchantApi.Data;
+using WebMerchantApi.Helpers;
+using WebMerchantApi.Helpers.Interfaces;
 using WebMerchantApi.Services;
 using WebMerchantApi.Services.Interfaces;
 
@@ -11,6 +13,7 @@ namespace WebMerchantApi.Extensions
         {
             services.AddScoped<IAccountService, AccountService>();
             services.AddTransient<DatabaseSeeder>();
+            services.AddScoped<IHashHelper, HashHelper>();
 
             return services;
         }

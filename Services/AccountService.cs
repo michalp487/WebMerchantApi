@@ -4,11 +4,13 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using WebMerchantApi.Constants;
 using WebMerchantApi.Data;
-using WebMerchantApi.Helpers;
+using WebMerchantApi.Helpers.Interfaces;
 using WebMerchantApi.Models;
 using WebMerchantApi.Services.Interfaces;
 
@@ -18,37 +20,39 @@ namespace WebMerchantApi.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration _configuration;
-        public AccountService(ApplicationDbContext context, IConfiguration configuration)
+        private readonly IHashHelper _hashHelper;
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        public AccountService(ApplicationDbContext context, IConfiguration configuration, UserManager<ApplicationUser> userManager, IHashHelper hashHelper)
         {
             _configuration = configuration;
+            _userManager = userManager;
+            _hashHelper = hashHelper;
             _context = context;
         }
 
         public async Task<ServiceResponse<string>> Login(string username, string password)
         {
-            ServiceResponse<string> response = new ServiceResponse<string>();
+            var response = new ServiceResponse<string>();
+
             var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName.ToLower().Equals(username.ToLower()));
-            if (user == null)
+
+            if (ValidateUser(password, user))
             {
                 response.Success = false;
-                response.Message = "User not found.";
+                response.Message = "Wrong credentials.";
+                return response;
             }
-            else if (!VerifyPasswordHash(password, Encoding.ASCII.GetBytes(user.PasswordHash), user.PasswordSalt))
-            {
-                response.Success = false;
-                response.Message = "Wrong password";
-            }
-            else
-            {
-                response.Data = CreateToken(user);
-            }
+
+            response.Data = await CreateToken(user);
 
             return response;
         }
 
-        public async Task<ServiceResponse<int>> Register(ApplicationUser user, string password)
+        public async Task<ServiceResponse<string>> Register(ApplicationUser user, string password)
         {
-            ServiceResponse<int> response = new ServiceResponse<int>();
+            var response = new ServiceResponse<string>();
+
             if (await UserExists(user.UserName))
             {
                 response.Success = false;
@@ -56,14 +60,14 @@ namespace WebMerchantApi.Services
                 return response;
             }
 
-            HashHelper.CreatePasswordHash(password, out byte[] passwordHash, out byte[] passwordSalt);
+            _hashHelper.CreatePasswordHash(password, out byte[] passwordHash, out byte[] passwordSalt);
 
-            user.PasswordHash = passwordHash.ToString();
-            user.PasswordSalt = passwordSalt;
+            user.PasswordHash = Convert.ToBase64String(passwordHash);
+            user.PasswordSalt = Convert.ToBase64String(passwordSalt);
 
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
-            response.Data = Int32.Parse(user.Id);
+            response.Data = user.Id;
             return response;
         }
 
@@ -73,51 +77,45 @@ namespace WebMerchantApi.Services
             {
                 return true;
             }
+
             return false;
         }
 
-        private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
+        private bool ValidateUser(string password, ApplicationUser user)
         {
-            using var hmac = new System.Security.Cryptography.HMACSHA512(passwordSalt);
-
-            var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-
-            for (int i = 0; i < computedHash.Length; i++)
-            {
-                if (computedHash[i] != passwordHash[i])
-                {
-                    return false;
-                }
-            }
-            return true;
+            return user == null || !_hashHelper.VerifyPasswordHash(password, Convert.FromBase64String(user.PasswordHash), Convert.FromBase64String(user.PasswordSalt));
         }
 
-        private string CreateToken(ApplicationUser user)
+        private async Task<string> CreateToken(ApplicationUser user)
         {
-            List<Claim> claims = new List<Claim>
+            var role = await _userManager.IsInRoleAsync(user, RoleConstants.Admin)
+                ? RoleConstants.Admin
+                : RoleConstants.Customer;
+
+            var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Id.ToString()),
-                new Claim(ClaimTypes.Role, "Admin")
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.Name, user.Id),
+                new Claim(ClaimTypes.Role, role)
             };
 
-            SymmetricSecurityKey key = new SymmetricSecurityKey(
+            var key = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value)
             );
 
-            SigningCredentials creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
-            SecurityTokenDescriptor tokenDescriptor = new SecurityTokenDescriptor
+            var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
                 Expires = DateTime.Now.AddDays(1),
-                SigningCredentials = creds
+                SigningCredentials = credentials
             };
 
-            JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
-            SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var token = tokenHandler.CreateToken(tokenDescriptor);
 
-            return tokenHandler.WriteToken(token);
+            return await Task.FromResult(tokenHandler.WriteToken(token));
         }
     }
 }

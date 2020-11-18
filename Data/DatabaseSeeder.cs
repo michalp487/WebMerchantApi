@@ -3,30 +3,34 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WebMerchantApi.Models;
 using Microsoft.Extensions.Configuration;
+using WebMerchantApi.Constants;
+using WebMerchantApi.Services.Interfaces;
 
 namespace WebMerchantApi.Data
 {
     public class DatabaseSeeder
     {
         private readonly ApplicationDbContext _context;
+        private readonly IAccountService _accountService;
         private readonly IConfiguration _configuration;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public DatabaseSeeder(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IConfiguration configuration)
+        public DatabaseSeeder(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IConfiguration configuration, IAccountService accountService)
         {
             _context = context;
             _userManager = userManager;
             _configuration = configuration;
+            _accountService = accountService;
         }
 
         public async Task SeedAsync()
         {
             await _context.Database.EnsureCreatedAsync();
 
-            await SeedRole("Admin");
-            await SeedRole("Customer");
+            await SeedRole(RoleConstants.Admin);
+            await SeedRole(RoleConstants.Customer);
 
-            await SeedUserWithRole("mailadmin@mail.com", "Admin");
+            await SeedUserWithRole("mailadmin@mail.com", RoleConstants.Admin);
         }
 
         private async Task SeedUserWithRole(string email, string role)
@@ -43,7 +47,7 @@ namespace WebMerchantApi.Data
 
                 var password = _configuration.GetSection("AppSettings:DefaultAdminPass").Value;
 
-                await _userManager.CreateAsync(user, password);
+                await _accountService.Register(user, password);
                 await _userManager.AddToRoleAsync(user, role);
                 await _context.SaveChangesAsync();
             }

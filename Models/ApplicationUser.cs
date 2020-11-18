@@ -4,6 +4,6 @@ namespace WebMerchantApi.Models
 {
     public class ApplicationUser : IdentityUser
     {
-        public byte[] PasswordSalt { get; set; }
+        public string PasswordSalt { get; set; }
     }
 }

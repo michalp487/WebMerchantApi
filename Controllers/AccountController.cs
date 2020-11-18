@@ -23,13 +23,13 @@ namespace WebMerchantApi.Controllers
         [ProducesResponseType(typeof(ServiceResponse<string>), StatusCodes.Status200OK)]
         public async Task<IActionResult> Register(UserRegisterDto request)
         {
-            ServiceResponse<int> response = await _accountService.Register(
-                new ApplicationUser { UserName = request.Username }, request.Password);
+            var response = await _accountService.Register(new ApplicationUser { UserName = request.Username, Email = request.Username}, request.Password);
 
             if (!response.Success)
             {
                 return BadRequest(response);
             }
+
             return Ok(response);
         }
 
@@ -38,13 +38,13 @@ namespace WebMerchantApi.Controllers
         [ProducesResponseType(typeof(ServiceResponse<string>), StatusCodes.Status200OK)]
         public async Task<IActionResult> Login(UserLoginDto request)
         {
-            ServiceResponse<string> response = await _accountService.Login(
-                request.Username, request.Password
-            );
+            var response = await _accountService.Login(request.Username, request.Password);
+
             if (!response.Success)
             {
                 return BadRequest(response);
             }
+
             return Ok(response);
         }
     }

@@ -95,7 +95,7 @@ namespace WebMerchantApi
             app.UseSwagger();
             app.UseSwaggerUI(options =>
             {
-                options.SwaggerEndpoint("/swagger/v2/swagger.json", "PlaceInfo Services");
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "Merchant API v1");
             });
         }
     }
