@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 
-namespace WebMerchantApi.AutoMapperProfiles
+namespace WebMerchantApi.Infrastructure.AutoMapper
 {
     public class AutoMapperProfile : Profile
     {
