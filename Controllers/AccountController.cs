@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WebMerchantApi.Models;
@@ -12,10 +13,12 @@ namespace WebMerchantApi.Controllers
     public class AccountController : ControllerBase
     {
         private readonly IAccountService _accountService;
+        private readonly ITokenService _tokenService;
 
-        public AccountController(IAccountService accountService)
+        public AccountController(IAccountService accountService, ITokenService tokenService)
         {
             _accountService = accountService;
+            _tokenService = tokenService;
         }
 
         [HttpPost("Register")]
@@ -46,6 +49,16 @@ namespace WebMerchantApi.Controllers
             }
 
             return Ok(response);
+        }
+
+        [Authorize]
+        [HttpPost("Logout")]
+        [ProducesResponseType(typeof(ServiceResponse<string>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> Logout()
+        {
+            await _tokenService.DeactivateCurrentAsync();
+
+            return Ok();
         }
     }
 }

@@ -12,6 +12,7 @@ using Microsoft.IdentityModel.Tokens;
 using WebMerchantApi.Data;
 using WebMerchantApi.Extensions;
 using WebMerchantApi.Infrastructure.Swagger;
+using WebMerchantApi.Middleware;
 using WebMerchantApi.Models;
 
 namespace WebMerchantApi
@@ -84,6 +85,8 @@ namespace WebMerchantApi
                 .AllowAnyHeader());
 
             app.UseAuthentication();
+
+            app.UseMiddleware<TokenMiddleware>();
 
             app.UseAuthorization();
 

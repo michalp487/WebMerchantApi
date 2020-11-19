@@ -1,7 +1,10 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.DependencyInjection;
 using WebMerchantApi.Data;
 using WebMerchantApi.Helpers;
 using WebMerchantApi.Helpers.Interfaces;
+using WebMerchantApi.Middleware;
 using WebMerchantApi.Services;
 using WebMerchantApi.Services.Interfaces;
 
@@ -14,6 +17,11 @@ namespace WebMerchantApi.Extensions
             services.AddScoped<IAccountService, AccountService>();
             services.AddTransient<DatabaseSeeder>();
             services.AddScoped<IHashHelper, HashHelper>();
+
+            services.AddTransient<TokenMiddleware>();
+            services.AddTransient<ITokenService, TokenService>();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddSingleton<IDistributedCache, MemoryDistributedCache>();
 
             return services;
         }
