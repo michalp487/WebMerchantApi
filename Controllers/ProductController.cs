@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WebMerchantApi.Entities;
@@ -20,7 +19,7 @@ namespace WebMerchantApi.Controllers
             _productService = productService;
         }
 
-        [HttpGet("GetAll")]
+        [HttpGet("All")]
         [ProducesResponseType(typeof(ServiceResponse<Product>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAll()
         {
