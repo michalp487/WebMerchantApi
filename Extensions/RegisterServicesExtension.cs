@@ -5,6 +5,8 @@ using WebMerchantApi.Data;
 using WebMerchantApi.Helpers;
 using WebMerchantApi.Helpers.Interfaces;
 using WebMerchantApi.Middleware;
+using WebMerchantApi.Repositories;
+using WebMerchantApi.Repositories.Interfaces;
 using WebMerchantApi.Services;
 using WebMerchantApi.Services.Interfaces;
 
@@ -15,6 +17,9 @@ namespace WebMerchantApi.Extensions
         public static IServiceCollection Register(this IServiceCollection services)
         {
             services.AddScoped<IAccountService, AccountService>();
+            services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IProductService, ProductService>();
+
             services.AddTransient<DatabaseSeeder>();
             services.AddScoped<IHashHelper, HashHelper>();
 

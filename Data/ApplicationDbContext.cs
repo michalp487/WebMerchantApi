@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using WebMerchantApi.Entities;
 using WebMerchantApi.Models;
 
 namespace WebMerchantApi.Data
@@ -14,11 +15,15 @@ namespace WebMerchantApi.Data
         {
         }
 
-        //public DbSet<Product> Products { get; set; }
+        public DbSet<Product> Products { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.Entity<Product>()
+                .Property(p => p.Price)
+                .HasColumnType("decimal(10, 3)");
         }
     }
 }
