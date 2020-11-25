@@ -1,6 +1,8 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using WebMerchantApi.Constants;
 using WebMerchantApi.Entities;
 using WebMerchantApi.Models;
 using WebMerchantApi.Models.Dto;
@@ -8,6 +10,7 @@ using WebMerchantApi.Services.Interfaces;
 
 namespace WebMerchantApi.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("[controller]")]
     public class ProductController : ControllerBase
@@ -33,6 +36,7 @@ namespace WebMerchantApi.Controllers
             return Ok(response);
         }
 
+        [Authorize(Roles = RoleConstants.Admin)]
         [HttpPost]
         [ProducesResponseType(typeof(ServiceResponse<string>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ServiceResponse<string>), StatusCodes.Status200OK)]
@@ -48,6 +52,7 @@ namespace WebMerchantApi.Controllers
             return Ok(response);
         }
 
+        [Authorize(Roles = RoleConstants.Admin)]
         [HttpDelete]
         [ProducesResponseType(typeof(ServiceResponse<string>), StatusCodes.Status200OK)]
         public async Task<IActionResult> Remove(string productId)
