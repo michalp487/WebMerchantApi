@@ -19,6 +19,8 @@ namespace WebMerchantApi.Extensions
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<IBasketService, BasketService>();
+            services.AddScoped<IBasketItemRepository, BasketItemRepository>();
 
             services.AddTransient<DatabaseSeeder>();
             services.AddScoped<IHashHelper, HashHelper>();

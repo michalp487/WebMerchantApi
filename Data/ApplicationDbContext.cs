@@ -17,11 +17,23 @@ namespace WebMerchantApi.Data
 
         public DbSet<Product> Products { get; set; }
 
+        public DbSet<BasketItem> BasketItems { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
             builder.Entity<Product>()
+                .Property(p => p.Price)
+                .HasColumnType("decimal(10, 3)");
+
+            builder.Entity<BasketItem>()
+                .HasOne(x => x.User)
+                .WithMany(x => x.BasketItems)
+                .HasForeignKey(x => x.UserId)
+                .IsRequired();
+
+            builder.Entity<BasketItem>()
                 .Property(p => p.Price)
                 .HasColumnType("decimal(10, 3)");
         }

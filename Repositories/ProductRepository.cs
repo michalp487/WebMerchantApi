@@ -23,7 +23,7 @@ namespace WebMerchantApi.Repositories
 
         public async Task<Product> GetById(string productId)
         {
-            return await _context.Products.SingleAsync(x => x.Id == productId);
+            return await _context.Products.SingleOrDefaultAsync(x => x.Id == productId);
         }
 
         public async Task<Product> GetByName(string name)
