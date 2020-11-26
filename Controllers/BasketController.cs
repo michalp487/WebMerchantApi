@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Security.Claims;
+using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -66,7 +67,7 @@ namespace WebMerchantApi.Controllers
         [ProducesResponseType(typeof(ServiceResponse<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> Add()
         {
-            var response = await _basketService.Add(request.ProductId);
+            var response = await _basketService.Checkout(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
             if (!response.Success)
             {
@@ -79,9 +80,9 @@ namespace WebMerchantApi.Controllers
         [Authorize(Roles = RoleConstants.Customer)]
         [HttpDelete]
         [ProducesResponseType(typeof(ServiceResponse<bool>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Remove(string productId)
+        public async Task<IActionResult> Remove(string basketItemId)
         {
-            var response = await _basketService.Remove(productId);
+            var response = await _basketService.Remove(basketItemId);
 
             if (!response.Success)
             {

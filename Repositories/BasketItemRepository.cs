@@ -32,6 +32,11 @@ namespace WebMerchantApi.Repositories
             return await _context.BasketItems.FirstOrDefaultAsync(x => x.Name == name && x.UserId == GetUserId());
         }
 
+        public async Task<BasketItem> GetById(string basketItemId)
+        {
+            return await _context.BasketItems.FirstOrDefaultAsync(x => x.Id == basketItemId && x.UserId == GetUserId());
+        }
+
         public async Task<string> Add(BasketItem basketItem)
         {
             basketItem.UserId = GetUserId();

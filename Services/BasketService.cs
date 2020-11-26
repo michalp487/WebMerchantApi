@@ -4,6 +4,7 @@ using WebMerchantApi.Entities;
 using WebMerchantApi.Models;
 using WebMerchantApi.Repositories.Interfaces;
 using WebMerchantApi.Services.Interfaces;
+using WebMerchantApi.Validators.Interfaces;
 
 namespace WebMerchantApi.Services
 {
@@ -11,11 +12,15 @@ namespace WebMerchantApi.Services
     {
         private readonly IBasketItemRepository _basketItemRepository;
         private readonly IProductRepository _productRepository;
+        private readonly IOrderRepository _orderRepository;
+        private readonly IBasketValidator _basketValidator;
 
-        public BasketService(IBasketItemRepository basketItemRepository, IProductRepository productRepository)
+        public BasketService(IBasketItemRepository basketItemRepository, IProductRepository productRepository, IOrderRepository orderRepository, IBasketValidator basketValidator)
         {
             _basketItemRepository = basketItemRepository;
             _productRepository = productRepository;
+            _orderRepository = orderRepository;
+            _basketValidator = basketValidator;
         }
 
         public async Task<ServiceResponse<BasketSummary>> GetSummary()
@@ -71,34 +76,48 @@ namespace WebMerchantApi.Services
             return response;
         }
 
-        public async Task<ServiceResponse<bool>> Remove(string productId)
+        public async Task<ServiceResponse<bool>> Remove(string basketItemId)
         {
             var response = new ServiceResponse<bool>();
 
-            var product = await _productRepository.GetById(productId);
+            var basketItem = await _basketItemRepository.GetById(basketItemId);
 
-            if (product == null)
+            if (basketItem == null)
             {
                 response.Success = false;
                 response.Message = "Nothing to remove.";
                 return response;
             }
 
-            var basketItem = await _basketItemRepository.GetByName(product.Name);
-
             await _basketItemRepository.Remove(basketItem);
 
             return response;
         }
 
-        public async Task<ServiceResponse<bool>> Checkout()
+        public async Task<ServiceResponse<bool>> Checkout(string userId)
         {
+            var response = new ServiceResponse<bool>();
+
+            var validationResponse = await _basketValidator.Validate();
+
+            if (validationResponse.Any())
+            {
+                response.Success = false;
+                response.Message = string.Join(", ", validationResponse);
+                return response;
+            }
+
             var basketSummary = await GetSummary();
 
-            var amount = basketSummary.Data.Amount;
+            var order = new Order
+            {
+                Price = basketSummary.Data.Amount,
+                UserId = userId
+            };
 
+            await _orderRepository.Add(order);
 
-            //await _basketItemRepository.RemoveAll();
+            await _basketItemRepository.RemoveAll();
 
             return new ServiceResponse<bool>();
         }

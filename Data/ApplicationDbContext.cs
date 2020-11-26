@@ -19,6 +19,8 @@ namespace WebMerchantApi.Data
 
         public DbSet<BasketItem> BasketItems { get; set; }
 
+        public DbSet<Order> Orders { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -34,6 +36,16 @@ namespace WebMerchantApi.Data
                 .IsRequired();
 
             builder.Entity<BasketItem>()
+                .Property(p => p.Price)
+                .HasColumnType("decimal(10, 3)");
+
+            builder.Entity<Order>()
+                .HasOne(x => x.User)
+                .WithMany(x => x.Orders)
+                .HasForeignKey(x => x.UserId)
+                .IsRequired();
+
+            builder.Entity<Order>()
                 .Property(p => p.Price)
                 .HasColumnType("decimal(10, 3)");
         }

@@ -9,5 +9,7 @@ namespace WebMerchantApi.Models
         public string PasswordSalt { get; set; }
 
         public IEnumerable<BasketItem> BasketItems { get; set; }
+
+        public IEnumerable<Order> Orders { get; set; }
     }
 }

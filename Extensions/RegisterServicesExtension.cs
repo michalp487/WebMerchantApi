@@ -9,6 +9,8 @@ using WebMerchantApi.Repositories;
 using WebMerchantApi.Repositories.Interfaces;
 using WebMerchantApi.Services;
 using WebMerchantApi.Services.Interfaces;
+using WebMerchantApi.Validators;
+using WebMerchantApi.Validators.Interfaces;
 
 namespace WebMerchantApi.Extensions
 {
@@ -21,6 +23,9 @@ namespace WebMerchantApi.Extensions
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IBasketService, BasketService>();
             services.AddScoped<IBasketItemRepository, BasketItemRepository>();
+            services.AddScoped<IBasketValidator, BasketValidator>();
+            services.AddScoped<IOrderRepository, OrderRepository>();
+            services.AddScoped<IOrderService, OrderService>();
 
             services.AddTransient<DatabaseSeeder>();
             services.AddScoped<IHashHelper, HashHelper>();

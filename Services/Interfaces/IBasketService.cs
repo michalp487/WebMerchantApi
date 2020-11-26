@@ -11,6 +11,6 @@ namespace WebMerchantApi.Services.Interfaces
 
         Task<ServiceResponse<bool>> Remove(string productId);
 
-        Task<ServiceResponse<bool>> Checkout();
+        Task<ServiceResponse<bool>> Checkout(string userId);
     }
 }

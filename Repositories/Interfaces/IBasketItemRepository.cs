@@ -10,6 +10,8 @@ namespace WebMerchantApi.Repositories.Interfaces
 
         Task<BasketItem> GetByName(string name);
 
+        Task<BasketItem> GetById(string basketItemId);
+
         Task<string> Add(BasketItem basketItem);
 
         Task<string> Update(BasketItem basketItem);
