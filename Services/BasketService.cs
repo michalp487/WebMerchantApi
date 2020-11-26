@@ -103,7 +103,7 @@ namespace WebMerchantApi.Services
             if (validationResponse.Any())
             {
                 response.Success = false;
-                response.Message = string.Join(", ", validationResponse);
+                response.Message = string.Join(", ", validationResponse.Select(x => x.Message));
                 return response;
             }
 
