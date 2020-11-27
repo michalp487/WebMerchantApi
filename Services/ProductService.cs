@@ -31,6 +31,13 @@ namespace WebMerchantApi.Services
         {
             var response = new ServiceResponse<string>();
 
+            if (product.Price <= 0)
+            {
+                response.Success = false;
+                response.Message = "Price needs to be positive number.";
+                return response;
+            }
+
             var existingProduct = await _productRepository.GetByName(product.Name);
 
             if (existingProduct != null)
